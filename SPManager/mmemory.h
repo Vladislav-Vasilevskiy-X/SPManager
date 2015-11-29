@@ -3,22 +3,30 @@
 
 #include<stdlib.h>
 #include<stdio.h>
+#include<sys/timeb.h>
 
-#define PAGE(X) ((unsigned int)X >> bitsForPageSize)
-#define OFFSET(X) ((unsigned int)X & ((1 << bitsForPageSize)- 1)
+#define TRUE 1
+#define FALSE 0
+#define PHYSICAL_MEMORY_SIZE 1<<20
+#define PHYSICAL_PAGES_NUMBER (PHYSICAL_MEMORY_SIZE/pageSize)
+#define MAX_VIRTUAL_MEMORY_SIZE numberOfPages*pageSize
+#define VIRTUAL_MEMORY_SIZE 1<<21
 
-const int TRUE = 0;
-const int FALSE = 1;
-const int PHYSICAL_PAGES_NUMBER = 14;
-const int MAX_VIRTUAL_MEMORY_SIZE = 128;
-
-typedef struct block {
-	struct block * next;
-	struct block * prev;
+typedef struct block
+{
 	size_t size;
 	unsigned int address;
 	char isUse;
+	unsigned int number;
 } block;
+
+//typedef struct block {
+//	struct block * next;
+//	struct block * prev;
+//	size_t size;
+//	unsigned int address;
+//	char isUse;
+//} block;
 
 typedef struct page {
 	unsigned long offset;
@@ -26,26 +34,94 @@ typedef struct page {
 	unsigned long timesUsed;
 } page;
 
-//Virtual address
-typedef char * VA;
+typedef char * VA;				//Тип описывающий адрес блока
 
-char*memory = NULL;
+char* memory = NULL;			//Физическая память
 
-unsigned int bitsForPageSize;
+unsigned int numberOfPages;		//Число страниц
+size_t pageSize;				//Размер страницы
+unsigned int bitsForPageSize;	//Чсило бит для размера страницы
 
-unsigned int numberOfPages;
-size_t pageSize;
-unsigned int bitsForPageSize;
+page * pageTable = NULL;		//Таблица страниц
+block * blockTable = NULL;		//Указатель на первый блок
 
-page * pageTable = NULL;
-block * firstBlock = NULL;
+unsigned int numberOfBlocks;
+unsigned int currentBlocksSize;
 
-FILE * swap = NULL;
+FILE * swap = NULL;				//Файл подкачки
 
+/**
+	@func	_init
+	@brief	Инициализация модели менеджера памяти
+
+	@param	[in] n		количество страниц
+	@param	[in] szPage	размер страницы
+
+	@return	код ошибки
+	@retval	0	успешное выполнение
+	@retval	-1	неверные параметры
+	@retval	1	неизвестная ошибка
+**/
 int _init(int n, int szPage);
+
+/**
+	@func	_malloc
+	@brief	Выделяет блок памяти определенного размера
+
+	@param	[out] pointer		адресс блока
+	@param	[in]  size	размер блока
+
+	@return	код ошибки
+	@retval	0	успешное выполнение
+	@retval	-1	неверные параметры
+	@retval	-2	нехватка памяти
+	@retval	1	неизвестная ошибка
+**/
 int _malloc(VA* pointer, size_t size);
+
+/**
+	@func	_read
+	@brief	Чтение информации из блока памяти
+
+	@param	[in] pointer		адресс блока
+	@param	[in] ptrBuffer	адресс буфера куда копируется инфомация
+	@param	[in] bufferSize	размер буфера
+
+	@return	код ошибки
+	@retval	0	успешное выполнение
+	@retval	-1	неверные параметры
+	@retval	-2	доступ за пределы блока
+	@retval	1	неизвестная ошибка
+**/
 int _read(VA pointer, void * ptrBuffer, size_t bufferSize);
+
+/**
+	@func	_write
+	@brief	Запись информации в блок памяти
+
+	@param	[in] pointer		адресс блока
+	@param	[in] ptrBuffer		адресс буфера куда копируется инфомация
+	@param	[in] bufferSize		размер буфера
+
+	@return	код ошибки
+	@retval	0	успешное выполнение
+	@retval	-1	неверные параметры
+	@retval	-2	доступ за пределы блока
+	@retval	1	неизвестная ошибка
+**/
 int _write(VA pointer, void * ptrBuffer, size_t bufferSize);
+
+/**
+	@func	_free
+	@brief	Удаление блока памяти
+
+	@param	[in] pointer	адресс блока
+
+	@return	код ошибки
+	@retval	0	успешное выполнение
+	@retval	-1	неверные параметры
+	@retval	1	неизвестная ошибка
+**/
 int _free(VA pointer);
 
 #endif

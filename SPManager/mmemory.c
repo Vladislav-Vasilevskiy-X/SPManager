@@ -1,146 +1,73 @@
-#include "mmemory.h";
+#include "mmemory.h"
 
-
-/*typedef struct block {
-	struct block* next;
-	struct block* previous;
-	int adress;
-	unsigned int number;
-	unsigned int size;
-}block;
-
-typedef struct page {
-	struct page* next;
-	struct page* previous;
-	unsigned int number;
-	char here;
-	char free;
-}page;
-
-struct block * segmentsTable;
-struct page * pagesTable;
-
-unsigned int page_size;
-unsigned int pages_number;
-
-const int default_block_size;
-const int default_blocks_number = 5;
-
-void _printStructures();
-
-void main() {
-	_init(10, 4);
-	_printStructures();
-}
-
-int _init(int n, int szPage){
-
-	//create/clear swap file
-
-	//check input data for correct
-	page_size = szPage;
-	pages_number = n;
-
-	segmentsTable = (block*)malloc(sizeof(block)* default_blocks_number);
-	pagesTable = (page*)malloc(sizeof(page)*pages_number);
-
-	block * prev_block = NULL;
-
-	for (int i = 0; i < default_blocks_number; i++){
-
-		//init every block;
-		(segmentsTable + i)->previous = prev_block;
-		(segmentsTable + i)->number = i;
-		(segmentsTable + i)->size = page_size;
-		(segmentsTable + i)->adress = (int)(segmentsTable + i);
-
-		if (i + 1 < default_blocks_number) {
-			(segmentsTable + i)->next = (segmentsTable + i + 1);
-		}
-		else {
-			(segmentsTable + i)->next = NULL;
-		}
-
-		prev_block = (segmentsTable + i);
-	}
-
-	page * prev_page = NULL;
-
-	for (int i = 0; i < pages_number; i++){
-
-		//init every page;
-		(pagesTable + i)->here = TRUE;
-		(pagesTable + i)->previous = prev_page;
-		(pagesTable + i)->number = i;
-		(pagesTable + i)->free = TRUE;
-
-		if (i + 1 < pages_number) {
-			(pagesTable + i)->next = (pagesTable + i + 1);
-		}
-		else {
-			(pagesTable + i)->next = NULL;
-		}
-
-		prev_page = (pagesTable + i);
-	}
-}
-*/
-
-void initManagerParams(int n, size_t size) {
-
+void initManagerParams(int n, size_t size)
+{
 	numberOfPages = n;
 	pageSize = size;
 	size_t tmp = size;
 	bitsForPageSize = 0;
 
-	while (tmp > 1) {
+	while (tmp > 1)
+	{
 		tmp >>= 1;
 		bitsForPageSize++;
 	}
 }
 
-void initMemory() {
+int checkInitParameters(int n, size_t size)
+{
+	if (size & (size - 1)){
+		return FALSE;
+	}
+	else return TRUE;
+}
+
+void initMemory()
+{
 	memory = (char*)malloc(sizeof(char)*PHYSICAL_PAGES_NUMBER*pageSize);
 }
 
-void initPageTable() {
-
+void initPageTable()
+{
 	pageTable = (page*)malloc(sizeof(page)*numberOfPages);
 
-	for (int i = 0; i < numberOfPages; i++) {
+	for (int i = 0; i < numberOfPages; i++)
+	{
 		pageTable[i].offset = pageSize*i;
 		pageTable[i].timesUsed = 0;
 
-		if (i < PHYSICAL_PAGES_NUMBER) {
+		if (i < PHYSICAL_PAGES_NUMBER)
+		{
 			pageTable[i].isUse = TRUE;
 		}
 		else pageTable[i].isUse = FALSE;
-
 	}
 }
 
-void initSwap() {
-	fopen_s(&swap, "./swap.dat", "wb+");
+void initSwap()
+{
+	swap = fopen("./swap.txt", "w+");
 }
 
-void initFirstBlock() {
-	firstBlock = (block*)malloc(sizeof(block));
+void initFirstBlock()
+{
+	blockTable = (block*)malloc(sizeof(block));
 
-	firstBlock->next = NULL;
-	firstBlock->prev = NULL;
-	firstBlock->isUse = FALSE;
-	firstBlock->size = MAX_VIRTUAL_MEMORY_SIZE;
-	firstBlock->address = 0;
+
+	//firstBlock = (block*)malloc(sizeof(block));
+	//
+	////Инициализация
+	//firstBlock->next = NULL;
+	//firstBlock->prev = NULL;
+	//firstBlock->isUse = FALSE;
+	//firstBlock->size = MAX_VIRTUAL_MEMORY_SIZE;
+	//firstBlock->address = 0;
 }
 
-/*int validateParams() {
-
-}*/
-
-int _init(int n, size_t size) {
-
-	//validate params
-
+int _init(int n, size_t size)
+{
+	//Проверка входных параметров
+	if (checkInitParameters(n, size) != TRUE) return -1;
 
 	//manager params
 	initManagerParams(n, size);
@@ -150,162 +77,423 @@ int _init(int n, size_t size) {
 
 	//init pageTable
 	initPageTable();
-	
+
 	//swap
 	initSwap();
 
 	//block
-	initFirstBlock();
-}
-
-int _malloc(VA * pointer, size_t size) {
-	block * temp = firstBlock;
-
-	while (temp != NULL) {
-		if (temp->size >= size && temp->isUse == FALSE) break;
-		temp = temp->next;
-	}
-
-	if (temp == NULL) return -2;
-
-	int part = temp->size - size;
-	temp->size = size;
-	temp->isUse = TRUE;
-
-	block * newBlock = (block*)malloc(sizeof(block));
-	newBlock->address = temp->address + size;
-	newBlock->isUse = FALSE;
-	newBlock->next = temp->next;
-	newBlock->prev = temp;
-	temp->next = newBlock;
-
-	*pointer = temp->address;
+	//initFirstBlock();
 
 	return 0;
 }
 
-int _free(VA pointer) {
-	block * temp = firstBlock;
+int _malloc(VA * pointer, size_t size)
+{
+	block * temp = NULL;
 
-	while (temp != NULL) {
-		if (temp->address == pointer) break;
-		temp = temp->next;
+	if (currentBlocksSize + size <= MAX_VIRTUAL_MEMORY_SIZE)
+	{
+		currentBlocksSize += size;
+		numberOfBlocks++;
+
+		//TEMP AND NULL
+		blockTable = (block*)realloc(blockTable, sizeof(block)*numberOfBlocks);
+
+		temp = blockTable + numberOfBlocks - 1;
+		
+		temp->isUse = FALSE;
+		temp->size = size;
+		temp->number = numberOfBlocks - 1;
+		temp->address = currentBlocksSize - size;
+		*pointer = (VA)temp;
+
+		return 0;
 	}
+	else return -2;
 
-	if (temp == NULL || temp->isUse == TRUE) return -1;
+//	block * temp = blockTable[0];
+//
+//	//Поиск свободного блока с нужным размером
+//	while (temp != NULL)
+//	{
+//		if (temp->size >= size && temp->isUse == FALSE) break;
+//		temp = temp->next;
+//	}
+//
+//	//Недостаточно памяти
+//	if (temp == NULL)
+//	{
+//		return -2;
+//	}
+//
+//	int part = temp->size - size;
+//	temp->size = size;
+//	temp->isUse = TRUE;
+//	
+//	if (size == 0)
+//	{
+//		return 0;
+//	}
+//
+//	//Текущий блок - блок, на которого указывает
+//	//виртуальный адрес, а следующий за 
+//	//ним - остатки исходного блока
+//	block * newBlock = (block*)malloc(sizeof(block));
+//	newBlock->size = part;
+//	newBlock->address = temp->address + size;
+//	newBlock->isUse = FALSE;
+//	newBlock->next = temp->next;
+//	newBlock->prev = temp;
+//	temp->next = newBlock;
+//
+//	*pointer = (VA)temp;
+//
+//	return 0;
+}
+
+int _free(VA pointer)
+{
+
+	block * temp = (block*)pointer;
+	if (temp == NULL) return -1;
 	temp->isUse = FALSE;
 
-	if (temp->next != NULL && temp->next->isUse == FALSE) {
-		temp->size += temp->next->size;
-		temp->next = temp->next->next;
+	if (numberOfBlocks == 0)
+	{
+		return -1;
 	}
 
-	if (temp->prev != NULL && temp->prev->isUse == FALSE) {
-		temp->prev->size += temp->size;
-		temp->prev->next = temp->next;
-	}
+	blockTable[temp->number].isUse = FALSE;
+	numberOfBlocks--;
+	currentBlocksSize -= temp->size;
+
+	blockTable = (block*)realloc(blockTable, numberOfBlocks*sizeof(block));
+	temp = NULL;
+	*pointer = (VA)temp;
 
 	return 0;
+
+	//block * temp = (block*)pointer;
+
+	//if (temp == NULL || temp->isUse == FALSE) return -1;
+	//temp->isUse = FALSE;
+
+	////Если след блок пустой - слияние
+	//if (temp->next != NULL && temp->next->isUse == FALSE)
+	//{
+	//	temp->size += temp->next->size;
+	//	temp->next = temp->next->next;
+	//}
+	//
+	////Если пред блок пустой - слияние
+	//if (temp->prev != NULL && temp->prev->isUse == FALSE)
+	//{
+	//	temp->prev->size += temp->size;
+	//	temp->prev->next = temp->next;
+	//}
+
+	//return 0;
 }
 
-int preparePage(int pageNumber) {
-
+int preparePage(int pageNumber)
+{
+	//Если страница уже в фищической памяти, возвращаемся
 	pageTable[pageNumber].timesUsed++;
 	if (pageTable[pageNumber].isUse == TRUE) return;
 
 	pageTable[pageNumber].timesUsed = 0;
 
-	int pageForSwapNumber;
+	int pageForSwapNumber = -2;
 	unsigned long minTimes = -1;
 
-	for (int i = 0; i < numberOfPages; i++) {
-		if (minTimes > pageTable[i].timesUsed && pageTable[i].isUse == TRUE) {
+	//Определяем страницу для выгрузки
+	for (int i = 0; i < numberOfPages; i++)
+	{
+		if (minTimes > pageTable[i].timesUsed && pageTable[i].isUse == TRUE)
+		{
 			minTimes = pageTable[i].timesUsed;
 			pageForSwapNumber = i;
 			break;
 		}
 	}
-	
+
+	//Задание смещение страниц
 	pageTable[pageNumber].offset = pageTable[pageForSwapNumber].offset;
 	pageTable[pageForSwapNumber].offset = pageForSwapNumber * pageSize;
 
+	//Задание смещения и запись страрицы на данную позицию в файле подкачки
 	fseek(swap, pageForSwapNumber*pageSize, SEEK_SET);
-	fwrite(&memory[pageTable[pageSize].offset], sizeof(char), pageSize, swap);
+	fwrite(&memory[pageTable[pageNumber].offset], sizeof(char), pageSize, swap);
 
+	//Задание смещения и чтение страрицы из данной позиции в файле подкачки
 	fseek(swap, pageNumber*pageSize, SEEK_SET);
 	fread(&memory[pageTable[pageNumber].offset], sizeof(char), pageSize, swap);
 
+	//Флаги
 	pageTable[pageNumber].isUse = TRUE;
 	pageTable[pageForSwapNumber].isUse = FALSE;
 }
 
-void write(VA ptr, char value) {
-	preparePage(PAGE(ptr));
-	memory[pageTable[PAGE(ptr)].offset + OFFSET(ptr))] = value;
+unsigned int pageVA(VA ptr)
+{
+	//Возвращение номера страницы по ее виртуальному адресу
+	return ((unsigned int)ptr >> bitsForPageSize);
 }
 
-int _write(VA pointer, void * buffer, size_t size) {
+unsigned int offsetVA(VA ptr)
+{
+	//Возвращение смещения страницы по ее виртуальному адресу
+	return ((unsigned int)ptr & ((1 << bitsForPageSize) - 1));
+}
+
+void write(VA ptr, char value)
+{
+	//Подготовка страницы и запись value в физ. память
+	preparePage(pageVA(ptr));
+	memory[pageTable[pageVA(ptr)].offset + offsetVA(ptr)] = value;
+}
+
+int _write(VA pointer, void * buffer, size_t size)
+{
 	char * cBuffer = (char*)buffer;
+	unsigned long address = ((block*)pointer)->address;
+
+	if (((block*)pointer)->size < size) return -2;
+
+	//Каждый байт в блоке записываем по адресу
+	for (int i = 0; i < size; i++)
+	{
+		write(address + i, cBuffer[i]);
+	}
+
+	return 0;
+}
+
+char read(VA ptr)
+{
+	//Подготовка страницы и чтение из памяти
+	preparePage(pageVA(ptr));
+	return memory[pageTable[pageVA(ptr)].offset + offsetVA(ptr)];
+}
+
+int _read(VA pointer, void * buffer, size_t size)
+{
+	char * cBuffer = (char*)buffer;
+	unsigned long address = ((block*)pointer)->address;
+
+	//Выход за пределы блока
+	if (((block*)pointer)->size < size) return -2;
+
 	for (int i = 0; i < size; i++){
-		write(pointer + i, cBuffer[i]);
+		cBuffer[i] = read(address + i);
+	}
+
+	return 0;
+}
+
+
+//void printVolumes(int szpage)
+//{
+//	printf("Size of page table: %dB\n", (VIRTUAL_MEMORY_SIZE / szpage) * sizeof(page));
+//	printf("Size of extra mem: %dB\n", VIRTUAL_MEMORY_SIZE % szpage);
+//}
+
+void testRandomAccess(int size) {
+
+	int i, result;
+	int n = VIRTUAL_MEMORY_SIZE / size;
+
+	result = _init(n, size);
+
+	char* buffer = (char*)malloc(size);
+	VA* addresses = (VA*)malloc(sizeof(VA)*n);
+
+	for (i = 0; i < n; i++)
+		_malloc(&addresses[i], size);
+
+	struct timeb startTime;
+	struct timeb endTime;
+	ftime(&startTime);
+
+	for (i = 0; i < 100; i++)
+		_write(addresses[abs(rand() % n)], buffer, size);
+	ftime(&endTime);
+	int diff = 0;
+
+	diff = (int)(1000.0 * (endTime.time - startTime.time) + (endTime.millitm - startTime.millitm));
+
+	printf("Perf time: %dms\n", diff);
+
+	for (i = 0; i < n; i++)
+		_free(addresses[i]);
+
+}
+
+void interruptsTimeTest(int szPage)
+{
+	int i, result;
+	int n = VIRTUAL_MEMORY_SIZE / szPage;
+	_init(n, szPage);
+
+	char* buffer = (char*)malloc(szPage);
+	VA* addresses = (VA*)malloc(sizeof(VA)*n);
+
+	for (i = 0; i < n; i++)
+	{
+		_malloc(&addresses[i], szPage);
+	}
+	struct timeb startTime, endTime, breakTime;
+	ftime(&startTime);
+
+	for (i = 0; i < n; i++)
+	{
+		result = _write(addresses[i], buffer, szPage);
+	}
+	ftime(&breakTime);
+
+	for (i = 0; i < n; i++)
+	{
+		result = _write(addresses[0], buffer, szPage);
+	}
+	ftime(&endTime);
+
+	int delta1 = (int)(1000.0 * (breakTime.time - startTime.time) + (breakTime.millitm - startTime.millitm));
+	int delta2 = (int)(1000.0 * (endTime.time - breakTime.time) + (endTime.millitm - breakTime.millitm));
+
+	printf("Interrupts time: %dms\n", abs(delta1 - delta2));
+	for (i = 0; i < n; i++)
+		_free(addresses[i]);
+
+}
+
+void startTests()
+{
+	int size = 1 << 15;
+	while (size > 64)
+	{
+		printf("\nPage size: %dB\n", size);
+		testRandomAccess(size);
+		//printVolumes(size);
+		interruptsTimeTest(size);
+		size /= 2;
 	}
 }
 
-char read(VA ptr) {
-	preparePage(PAGE(ptr));
-	return memory[pageTable[PAGE(ptr)].offset + OFFSET(ptr))];
+void testInit() {
+	int result;
+	result = _init(10, 10);
+
+	if (result == -1) printf("Size of page %d != 2^k\n", 10);
+	result = _init(2, 8);
+
+	if (result != 0) printf("Initialization, pages: 2, pageSize: 8 is not successful\n");
+	if (result == 0) printf("Initialization is successful\n");
 }
 
-int _read(VA pointer, void * buffer, size_t size) {
-	char * cBuffer = (char*)buffer;
-	for (int i = 0; i < size; i++){
-		cBuffer[i] = read(pointer + i);
-	}
-}
-
-void main() {
+void testMalloc() {
+	int result;
 	VA address;
+	result = _malloc(&address, 5000);
 
-	const int size = 120;
+	if (result == -2) printf("Can't allocate size %d > size of all memory %d\n", 5000, 4096);
+	
+	result = _malloc(&address, 4);
+	if (result != 0) printf("Cannot allocate block of memory\n");
+	else if (result == 0) printf("Malloc is successful\n");
 
-	char buffer[120];
-	char tBuf[120];
-
-	_init(20, 3);
-	_malloc(&address, size);
-
-	for (int i = 0; i < size; i++) {
-		buffer[i] = 'w';
-	}
-
-	_write(address, buffer, size);
-	_read(address, tBuf, size);
-
-	for (int i = 0; i < size; i++) {
-		printf("%c", tBuf[i]);
-	}
+	_free(address);
 }
 
-/*
-void _printStructures(){
+void testFree() {
+	int result;
+	VA address;
+	_malloc(&address, 4);
 
-	printf("Segments table.\n");
-	for (int i = 0; i < default_blocks_number; i++) {
-		printf("block's adress: %d\n", segmentsTable[i]);
-		printf("	next: %d\n", (segmentsTable + i)->next);
-		printf("	prev: %d\n", (segmentsTable + i)->previous);
-		printf("	size: %d\n", (segmentsTable + i)->size);
-		printf("	number: %d\n", (segmentsTable + i)->number);
+	result = _free(address);
+	if (result != 0) printf("Can't free allocated block of memory\n");
 
-	}
+	result = _free(address);
+	if (result == -1) printf("Can't free deleted block of memory\n");
+	if (result == 0) printf("Free is successful\n");
+}
 
-	printf("Pages table.\n");
-	for (int i = 0; i < pages_number; i++) {
-		printf("page's adress: %d\n", (pagesTable + i));
-		printf("	next: %d\n", (pagesTable + i)->next);
-		printf("	prev: %d\n", (pagesTable + i)->previous);
-		printf("	here: %d\n", (pagesTable + i)->here);
-		printf("	free: %d\n", (pagesTable + i)->free);
-		printf("	number: %d\n", (pagesTable + i)->number);
-	}
-}*/
+void testWrite() {
+	int result;
+	VA address;
+	_malloc(&address, 4);
+
+	char* buffer = (char*)malloc(5);
+	result = _write(address, buffer, 5);
+
+	if (result == -2) printf("Can't write outside\n");
+
+	result = _write(address, buffer, 4);
+
+	if (result != 0) printf("Can't write in block\n");
+	else if (result == 0) printf("Write is successful\n");
+	_free(address);
+}
+
+void testRead() {
+	int result;
+	VA address;
+	_malloc(&address, 4);
+
+	char* buffer = (char*)malloc(5);
+	result = _read(address, buffer, 5);
+
+	if (result == -2) printf("Can't read outside\n");
+	result = _read(address, buffer, 4);
+
+	if (result != 0) printf("Cannot read in block\n");
+	else if (result == 0) printf("Read is successful\n");
+
+	_free(address);
+}
+
+void testLoading() {
+	int result, i;
+	VA address;
+	_malloc(&address, 11);
+
+	char* buffer = (char*)malloc(11);
+	for (i = 0; i < 10; i++)
+		buffer[i] = '0' + i;
+
+	buffer[10] = '\0';
+
+	_write(address, buffer, 11);
+	_read(address, buffer, 11);
+
+	if (strcmp(buffer, "0123456789")) printf("Wrong result: %s\n", buffer);
+	_free(address);
+}
+
+void runTests() {
+	testInit();
+	testMalloc();
+	testFree();
+	testWrite();
+	testRead();
+	testLoading();
+}
+
+int main()
+{
+	//VA adr;
+	//_init(10, 2);
+	//_malloc(&adr, 5);
+
+	//char buf[5] = { 'a','v','a','d','a' };
+	//char buf2[5];
+
+	//_write(adr, buf, 5);
+	//_read(adr, buf2, 5);
+	//for (int i = 0; i < 5; i++)
+	//	printf("%c", buf2[i]);
+
+	startTests();
+//	runTests();
+	//getch();
+	return 0;
+}

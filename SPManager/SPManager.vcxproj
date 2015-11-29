@@ -18,6 +18,12 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="mmemory.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="mmemory.c" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7444014A-3CE4-4984-8063-34E51611A066}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -146,12 +152,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\Desktop\New folder (2)\SPManager\SPManager\mmemory.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\Desktop\New folder (2)\SPManager\SPManager\mmemory.c" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
