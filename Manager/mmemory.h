@@ -11,9 +11,9 @@
 #define TRUE 1
 #define FALSE 0
 #define PHYSICAL_MEMORY_SIZE 1<<19
+#define VIRTUAL_MEMORY_SIZE 1<<21
 #define PHYSICAL_PAGES_NUMBER (PHYSICAL_MEMORY_SIZE/pageSize)
 #define MAX_VIRTUAL_MEMORY_SIZE numberOfPages*pageSize
-#define VIRTUAL_MEMORY_SIZE 1<<21
 
 typedef struct block
 {

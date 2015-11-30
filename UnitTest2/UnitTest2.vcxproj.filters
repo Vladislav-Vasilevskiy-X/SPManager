@@ -29,5 +29,8 @@
     <ClCompile Include="Positive.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UserTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
