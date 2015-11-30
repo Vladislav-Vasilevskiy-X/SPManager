@@ -64,7 +64,7 @@ void initFirstBlock()
 	//firstBlock->address = 0;
 }
 
-int _init(int n, size_t size)
+MMEMORY_API int _init(int n, size_t size)
 {
 	//Проверка входных параметров
 	if (checkInitParameters(n, size) != TRUE) return -1;
@@ -87,26 +87,96 @@ int _init(int n, size_t size)
 	return 0;
 }
 
-int _malloc(VA * pointer, size_t size)
+block * addSegmentToTable(size_t size)
+{
+	block * temp = NULL;
+	currentBlocksSize += size;
+	numberOfBlocks++;
+
+	//TEMP AND NULL
+	blockTable = (block*)realloc(blockTable, sizeof(block)*numberOfBlocks);
+
+	temp = blockTable + numberOfBlocks - 1;
+
+	temp->isUse = FALSE;
+	temp->size = size;
+	temp->number = numberOfBlocks - 1;
+	temp->address = currentBlocksSize - size;
+
+	return temp;
+}
+
+
+MMEMORY_API int _free(VA pointer)
+{
+
+	block * temp = (block*)pointer;
+	if (temp == NULL) return -1;
+	temp->isUse = FALSE;
+
+	if (numberOfBlocks == 0)
+	{
+		return -1;
+	}
+
+	blockTable[temp->number].isUse = FALSE;
+
+	for (int i = temp->number; i < numberOfBlocks - 1; i++)
+	{
+		blockTable[i].address = blockTable[i + 1].address;
+		blockTable[i].isUse = blockTable[i + 1].isUse;
+		blockTable[i].size = blockTable[i + 1].size;
+	}
+
+	numberOfBlocks--;
+	currentBlocksSize -= temp->size;
+
+	blockTable = (block*)realloc(blockTable, numberOfBlocks*sizeof(block));
+	temp = NULL;
+	*pointer = (VA)temp;
+
+	return 0;
+
+	//block * temp = (block*)pointer;
+
+	//if (temp == NULL || temp->isUse == FALSE) return -1;
+	//temp->isUse = FALSE;
+
+	////Если след блок пустой - слияние
+	//if (temp->next != NULL && temp->next->isUse == FALSE)
+	//{
+	//	temp->size += temp->next->size;
+	//	temp->next = temp->next->next;
+	//}
+	//
+	////Если пред блок пустой - слияние
+	//if (temp->prev != NULL && temp->prev->isUse == FALSE)
+	//{
+	//	temp->prev->size += temp->size;
+	//	temp->prev->next = temp->next;
+	//}
+
+	//return 0;
+}
+
+
+MMEMORY_API int _malloc(VA * pointer, size_t size)
 {
 	block * temp = NULL;
 
+	for (int i = 0; i < numberOfBlocks; i++)
+	{
+		if (blockTable[i].isUse = FALSE && blockTable[i].size > size)
+		{
+			_free((VA)(blockTable+i));
+			*pointer = (VA)addSegmentToTable(size);
+			return 0;
+		}
+	}
+
 	if (currentBlocksSize + size <= MAX_VIRTUAL_MEMORY_SIZE)
 	{
-		currentBlocksSize += size;
-		numberOfBlocks++;
-
-		//TEMP AND NULL
-		blockTable = (block*)realloc(blockTable, sizeof(block)*numberOfBlocks);
-
-		temp = blockTable + numberOfBlocks - 1;
-		
-		temp->isUse = FALSE;
-		temp->size = size;
-		temp->number = numberOfBlocks - 1;
-		temp->address = currentBlocksSize - size;
-		*pointer = (VA)temp;
-
+		*pointer = (VA)addSegmentToTable(size);
 		return 0;
 	}
 	else return -2;
@@ -149,50 +219,6 @@ int _malloc(VA * pointer, size_t size)
 //	*pointer = (VA)temp;
 //
 //	return 0;
-}
-
-int _free(VA pointer)
-{
-
-	block * temp = (block*)pointer;
-	if (temp == NULL) return -1;
-	temp->isUse = FALSE;
-
-	if (numberOfBlocks == 0)
-	{
-		return -1;
-	}
-
-	blockTable[temp->number].isUse = FALSE;
-	numberOfBlocks--;
-	currentBlocksSize -= temp->size;
-
-	blockTable = (block*)realloc(blockTable, numberOfBlocks*sizeof(block));
-	temp = NULL;
-	*pointer = (VA)temp;
-
-	return 0;
-
-	//block * temp = (block*)pointer;
-
-	//if (temp == NULL || temp->isUse == FALSE) return -1;
-	//temp->isUse = FALSE;
-
-	////Если след блок пустой - слияние
-	//if (temp->next != NULL && temp->next->isUse == FALSE)
-	//{
-	//	temp->size += temp->next->size;
-	//	temp->next = temp->next->next;
-	//}
-	//
-	////Если пред блок пустой - слияние
-	//if (temp->prev != NULL && temp->prev->isUse == FALSE)
-	//{
-	//	temp->prev->size += temp->size;
-	//	temp->prev->next = temp->next;
-	//}
-
-	//return 0;
 }
 
 int preparePage(int pageNumber)
@@ -253,7 +279,7 @@ void write(VA ptr, char value)
 	memory[pageTable[pageVA(ptr)].offset + offsetVA(ptr)] = value;
 }
 
-int _write(VA pointer, void * buffer, size_t size)
+MMEMORY_API int _write(VA pointer, void * buffer, size_t size)
 {
 	char * cBuffer = (char*)buffer;
 	unsigned long address = ((block*)pointer)->address;
@@ -276,7 +302,7 @@ char read(VA ptr)
 	return memory[pageTable[pageVA(ptr)].offset + offsetVA(ptr)];
 }
 
-int _read(VA pointer, void * buffer, size_t size)
+MMEMORY_API int _read(VA pointer, void * buffer, size_t size)
 {
 	char * cBuffer = (char*)buffer;
 	unsigned long address = ((block*)pointer)->address;
@@ -478,22 +504,39 @@ void runTests() {
 	testLoading();
 }
 
-int main()
-{
-	//VA adr;
-	//_init(10, 2);
-	//_malloc(&adr, 5);
+void main() {}
 
-	//char buf[5] = { 'a','v','a','d','a' };
-	//char buf2[5];
-
-	//_write(adr, buf, 5);
-	//_read(adr, buf2, 5);
-	//for (int i = 0; i < 5; i++)
-	//	printf("%c", buf2[i]);
-
-	startTests();
+//int main()
+//{
+//	/*VA adr, adr2, adr3;
+//	_init(10, 2);
+//	_malloc(&adr, 5);
+//	_malloc(&adr3, 10);
+//	_malloc(&adr2, 5);
+//
+//	char buf[5] = { 'a','v','a','d','a' };
+//	char buf2[15];
+//
+//	_write(adr, buf, 5);
+//	_write(adr2, buf, 5);
+//	_write(adr3, buf, 5);
+//	_read(adr, buf2, 5);
+//	for (int i = 0; i < 5; i++)
+//		printf("%c", buf2[i]);
+//
+//	_free(adr2);
+//	_free(adr3);
+//
+//	_malloc(&adr2, 13);
+//	char buf3[13] = { 'a','v','a','d','a',' ', 'k','e', 'd','a','v','r','a' };
+//	_write(adr2, buf3, 13);
+//	_read(adr2, buf2, 13);
+//
+//	for (int i = 0; i < 13; i++)
+//		printf("%c", buf2[i]);*/
+//
 //	runTests();
-	//getch();
-	return 0;
-}
+////	startTests();
+//	//getch();
+//	return 0;
+//}

@@ -1,0 +1,40 @@
+﻿Build started 30-Nov-15 8:33:59 PM.
+     1>Project "C:\Users\user\documents\visual studio 2015\Projects\SPManager\Manager\Manager.vcxproj" on node 3 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\CL.exe /c /ZI /nologo /W3 /WX- /Od /D _DEBUG /D _WINDOWS /D _USRDLL /D MANAGER_EXPORTS /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"x64\Debug\\" /Fd"x64\Debug\vc140.pdb" /Gd /TC /errorReport:prompt mmemory.c
+         mmemory.c
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(27): warning C4334: '<<': result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(34): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(36): warning C4267: '=': conversion from 'size_t' to 'unsigned long', possible loss of data
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(49): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+         c:\program files (x86)\windows kits\10\include\10.0.10150.0\ucrt\stdio.h(205): note: see declaration of 'fopen'
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(68): warning C4028: formal parameter 2 different from declaration
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(93): warning C4267: '+=': conversion from 'size_t' to 'unsigned int', possible loss of data
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(104): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(124): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(132): warning C4267: '-=': conversion from 'size_t' to 'unsigned int', possible loss of data
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(136): warning C4047: '=': 'char' differs in levels of indirection from 'VA'
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(167): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(228): warning C4033: 'preparePage' must return a value
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(236): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(248): warning C4267: '=': conversion from 'size_t' to 'unsigned long', possible loss of data
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(251): warning C4267: 'function': conversion from 'size_t' to 'long', possible loss of data
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(255): warning C4267: 'function': conversion from 'size_t' to 'long', possible loss of data
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(266): warning C4311: 'type cast': pointer truncation from 'VA' to 'unsigned int'
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(272): warning C4311: 'type cast': pointer truncation from 'VA' to 'unsigned int'
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(292): warning C4047: 'function': 'VA' differs in levels of indirection from 'unsigned long'
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(292): warning C4024: 'write': different types for formal and actual parameter 1
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(314): warning C4047: 'function': 'VA' differs in levels of indirection from 'unsigned long'
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(314): warning C4024: 'read': different types for formal and actual parameter 1
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(494): warning C4013: 'strcmp' undefined; assuming extern returning int
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(481): warning C4101: 'result': unreferenced local variable
+     1>c:\users\user\documents\visual studio 2015\projects\spmanager\manager\mmemory.c(261): warning C4716: 'preparePage': must return a value
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\user\documents\visual studio 2015\Projects\SPManager\x64\Debug\Manager.dll" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Users\user\documents\visual studio 2015\Projects\SPManager\x64\Debug\Manager.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\user\documents\visual studio 2015\Projects\SPManager\x64\Debug\Manager.lib" /MACHINE:X64 /DLL x64\Debug\mmemory.obj
+            Creating library C:\Users\user\documents\visual studio 2015\Projects\SPManager\x64\Debug\Manager.lib and object C:\Users\user\documents\visual studio 2015\Projects\SPManager\x64\Debug\Manager.exp
+         Manager.vcxproj -> C:\Users\user\documents\visual studio 2015\Projects\SPManager\x64\Debug\Manager.dll
+     1>Done Building Project "C:\Users\user\documents\visual studio 2015\Projects\SPManager\Manager\Manager.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:02.66

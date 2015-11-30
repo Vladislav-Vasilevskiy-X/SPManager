@@ -1,5 +1,8 @@
-#ifndef MMEMORY_H_
-#define MMEMORY_H_
+#ifndef MMEMORY_EXPORTS
+#define MMEMORY_API _declspec(dllexport)
+#else
+#define MMEMORY_API _declspec(dllimport)
+#endif
 
 #include<stdlib.h>
 #include<stdio.h>
@@ -7,7 +10,7 @@
 
 #define TRUE 1
 #define FALSE 0
-#define PHYSICAL_MEMORY_SIZE 1<<20
+#define PHYSICAL_MEMORY_SIZE 1<<19
 #define PHYSICAL_PAGES_NUMBER (PHYSICAL_MEMORY_SIZE/pageSize)
 #define MAX_VIRTUAL_MEMORY_SIZE numberOfPages*pageSize
 #define VIRTUAL_MEMORY_SIZE 1<<21
@@ -34,21 +37,21 @@ typedef struct page {
 	unsigned long timesUsed;
 } page;
 
-typedef char * VA;				//Тип описывающий адрес блока
+MMEMORY_API typedef char * VA;				//Тип описывающий адрес блока
 
-char* memory = NULL;			//Физическая память
+MMEMORY_API char* memory = NULL;			//Физическая память
 
-unsigned int numberOfPages;		//Число страниц
-size_t pageSize;				//Размер страницы
-unsigned int bitsForPageSize;	//Чсило бит для размера страницы
+MMEMORY_API unsigned int numberOfPages;		//Число страниц
+MMEMORY_API size_t pageSize;				//Размер страницы
+MMEMORY_API unsigned int bitsForPageSize;	//Чсило бит для размера страницы
 
-page * pageTable = NULL;		//Таблица страниц
-block * blockTable = NULL;		//Указатель на первый блок
+MMEMORY_API page * pageTable = NULL;		//Таблица страниц
+MMEMORY_API block * blockTable = NULL;		//Указатель на первый блок
 
-unsigned int numberOfBlocks;
-unsigned int currentBlocksSize;
+MMEMORY_API unsigned int numberOfBlocks;
+MMEMORY_API unsigned int currentBlocksSize;
 
-FILE * swap = NULL;				//Файл подкачки
+MMEMORY_API FILE * swap = NULL;				//Файл подкачки
 
 /**
 	@func	_init
@@ -62,7 +65,7 @@ FILE * swap = NULL;				//Файл подкачки
 	@retval	-1	неверные параметры
 	@retval	1	неизвестная ошибка
 **/
-int _init(int n, int szPage);
+MMEMORY_API int _init(int n, int szPage);
 
 /**
 	@func	_malloc
@@ -77,7 +80,7 @@ int _init(int n, int szPage);
 	@retval	-2	нехватка памяти
 	@retval	1	неизвестная ошибка
 **/
-int _malloc(VA* pointer, size_t size);
+MMEMORY_API int _malloc(VA* pointer, size_t size);
 
 /**
 	@func	_read
@@ -93,7 +96,7 @@ int _malloc(VA* pointer, size_t size);
 	@retval	-2	доступ за пределы блока
 	@retval	1	неизвестная ошибка
 **/
-int _read(VA pointer, void * ptrBuffer, size_t bufferSize);
+MMEMORY_API int _read(VA pointer, void * ptrBuffer, size_t bufferSize);
 
 /**
 	@func	_write
@@ -109,7 +112,7 @@ int _read(VA pointer, void * ptrBuffer, size_t bufferSize);
 	@retval	-2	доступ за пределы блока
 	@retval	1	неизвестная ошибка
 **/
-int _write(VA pointer, void * ptrBuffer, size_t bufferSize);
+MMEMORY_API int _write(VA pointer, void * ptrBuffer, size_t bufferSize);
 
 /**
 	@func	_free
@@ -122,6 +125,4 @@ int _write(VA pointer, void * ptrBuffer, size_t bufferSize);
 	@retval	-1	неверные параметры
 	@retval	1	неизвестная ошибка
 **/
-int _free(VA pointer);
-
-#endif
+MMEMORY_API int _free(VA pointer);
