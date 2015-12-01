@@ -7,11 +7,25 @@ void initManagerParams(int n, size_t size)
 	size_t tmp = size;
 	bitsForPageSize = 0;
 
+	numberOfBlocks = 0;
+	currentBlocksSize = 0;
+	interruptsNumber = 0;
+
 	while (tmp > 1)
 	{
 		tmp >>= 1;
 		bitsForPageSize++;
 	}
+}
+
+void setInterrupts(unsigned int number)
+{
+	interruptsNumber = number;
+}
+
+unsigned int getInterrupts()
+{
+	return interruptsNumber;
 }
 
 int checkInitParameters(int n, size_t size)
@@ -77,16 +91,11 @@ block * addSegmentToTable(size_t size)
 	return temp;
 }
 
-int _free(VA pointer)
+int _free(VA  * pointer)
 {
 	block * temp = (block*)pointer;
-	if (temp == NULL) return -1;
+	if (temp == NULL || numberOfBlocks == 0 || pointer == NULL) return -1;
 	temp->isUse = FALSE;
-
-	if (numberOfBlocks == 0)
-	{
-		return -1;
-	}
 
 	blockTable[temp->number].isUse = FALSE;
 
@@ -107,28 +116,55 @@ int _free(VA pointer)
 	return 0;
 }
 
-
 int _malloc(VA * pointer, size_t size)
 {
-	block * temp = NULL;
-
-	for (int i = 0; i < numberOfBlocks; i++)
-	{
-		if (blockTable[i].isUse = FALSE && blockTable[i].size > size)
-		{
-			_free((VA)(blockTable+i));
-			*pointer = (VA)addSegmentToTable(size);
-			return 0;
-		}
-	}
-
 	if (currentBlocksSize + size <= MAX_VIRTUAL_MEMORY_SIZE)
 	{
-		*pointer = (VA)addSegmentToTable(size);
+		block * temp = NULL;
+		currentBlocksSize += size;
+		numberOfBlocks++;
+
+		blockTable = (block*)realloc(blockTable, sizeof(block)*numberOfBlocks);
+
+		temp = blockTable + numberOfBlocks - 1;
+		temp->isUse = FALSE;
+		temp->size = size;
+		temp->number = numberOfBlocks - 1;
+		temp->address = currentBlocksSize - size;
+
+		*pointer = (VA)temp;
+
 		return 0;
 	}
 	else return -2;
 }
+
+//int _malloc(VA * pointer, size_t size)
+//{
+//	block * temp = NULL;
+//
+//	for (int i = 0; i < numberOfBlocks; i++)
+//	{
+//		if (blockTable[i].isUse = FALSE && blockTable[i].size > size)
+//		{
+//			_free((VA)(blockTable+i));
+//			*pointer = (VA)addSegmentToTable(size);
+//			return 0;
+//		}
+//		if (blockTable[i].isUse = FALSE && blockTable[i].size == size)
+//		{
+//			*pointer = (VA)(blockTable + i);
+//			return 0;
+//		}
+//	}
+//
+//	if (currentBlocksSize + size <= MAX_VIRTUAL_MEMORY_SIZE)
+//	{
+//		*pointer = (VA)addSegmentToTable(size);
+//		return 0;
+//	}
+//	else return -2;
+//}
 
 int preparePage(int pageNumber)
 {
@@ -136,6 +172,8 @@ int preparePage(int pageNumber)
 	pageTable[pageNumber].timesUsed++;
 	if (pageTable[pageNumber].isUse == TRUE) return;
 
+	interruptsNumber++;
+	//printf("%d\n", interruptsNumber);
 	pageTable[pageNumber].timesUsed = 0;
 
 	int pageForSwapNumber = -2;
@@ -152,7 +190,7 @@ int preparePage(int pageNumber)
 		}
 	}
 
-	//Задание смещение страниц
+	//Задание смещения страниц
 	pageTable[pageNumber].offset = pageTable[pageForSwapNumber].offset;
 	pageTable[pageForSwapNumber].offset = pageForSwapNumber * pageSize;
 
@@ -216,8 +254,8 @@ int _read(VA pointer, void * buffer, size_t size)
 	char * cBuffer = (char*)buffer;
 	unsigned long address = ((block*)pointer)->address;
 
-	//Выход за пределы блока
-	if (((block*)pointer)->size < size) return -2;
+	//Выход за пределы буфера
+	if (((block*)pointer)->size > size) return -2;
 
 	for (int i = 0; i < size; i++){
 		cBuffer[i] = read(address + i);

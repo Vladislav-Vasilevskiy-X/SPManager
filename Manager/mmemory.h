@@ -10,8 +10,8 @@
 
 #define TRUE 1
 #define FALSE 0
-#define PHYSICAL_MEMORY_SIZE 1<<19
-#define VIRTUAL_MEMORY_SIZE 1<<21
+#define PHYSICAL_MEMORY_SIZE 1<<20
+#define VIRTUAL_MEMORY_SIZE 10000000
 #define PHYSICAL_PAGES_NUMBER (PHYSICAL_MEMORY_SIZE/pageSize)
 #define MAX_VIRTUAL_MEMORY_SIZE numberOfPages*pageSize
 
@@ -50,6 +50,10 @@ block * blockTable = NULL;		//”казатель на первый блок
 
 unsigned int numberOfBlocks;
 unsigned int currentBlocksSize;
+
+unsigned int interruptsNumber;
+MMEMORY_API unsigned int getInterrupts();
+MMEMORY_API void setInterrupts(unsigned int number);
 
 FILE * swap = NULL;				//‘айл подкачки
 

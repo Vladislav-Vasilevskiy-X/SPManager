@@ -26,10 +26,7 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Positive.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="UserTests.cpp">
+    <ClCompile Include="UnitTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
