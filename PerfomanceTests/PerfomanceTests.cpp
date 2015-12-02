@@ -1,11 +1,13 @@
 #pragma comment (lib,"Manager.lib")
 #include <stdlib.h>
+#include <stdio.h>
 
 extern "C"
 {
 #include "..\Manager\mmemory.h"
 }
 
+#define VIRTUAL_MEMORY_SIZE 10000000
 
 void testRandomAccess(int size)
 {
@@ -83,5 +85,40 @@ void startTests()
 
 void main()
 {
-	startTests();
+	VA adr;
+	_init(10, 2);
+	_malloc(&adr, 10);
+
+	char srcArray[10] = { 't' ,'e','s','t',' ','a','r','r','a','y' };
+	char resArray[10];
+
+	char buf[4] = "www";
+	char buf2[4];
+
+	block * temp = (block*)adr;
+	int address = temp->address;
+
+
+	_write(adr, srcArray, 10);
+
+
+	__write(address + 2, buf, 3);
+		
+	_read(adr, resArray, 10);
+
+	for (int i = 0; i < 10; i++)
+	{
+		printf("%c\n", resArray[i]);
+	}
+
+	__read(address + 2, buf2, 4);
+
+	puts("line");
+
+	for (int i = 0; i < 4; i++)
+	{
+		printf("%c\n", buf2[i]);
+	}
+
+	//startTests();
 }

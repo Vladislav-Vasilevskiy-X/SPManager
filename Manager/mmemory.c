@@ -139,47 +139,18 @@ int _malloc(VA * pointer, size_t size)
 	else return -2;
 }
 
-//int _malloc(VA * pointer, size_t size)
-//{
-//	block * temp = NULL;
-//
-//	for (int i = 0; i < numberOfBlocks; i++)
-//	{
-//		if (blockTable[i].isUse = FALSE && blockTable[i].size > size)
-//		{
-//			_free((VA)(blockTable+i));
-//			*pointer = (VA)addSegmentToTable(size);
-//			return 0;
-//		}
-//		if (blockTable[i].isUse = FALSE && blockTable[i].size == size)
-//		{
-//			*pointer = (VA)(blockTable + i);
-//			return 0;
-//		}
-//	}
-//
-//	if (currentBlocksSize + size <= MAX_VIRTUAL_MEMORY_SIZE)
-//	{
-//		*pointer = (VA)addSegmentToTable(size);
-//		return 0;
-//	}
-//	else return -2;
-//}
-
 int preparePage(int pageNumber)
 {
-	//Если страница уже в фищической памяти, возвращаемся
 	pageTable[pageNumber].timesUsed++;
 	if (pageTable[pageNumber].isUse == TRUE) return;
 
 	interruptsNumber++;
-	//printf("%d\n", interruptsNumber);
+
 	pageTable[pageNumber].timesUsed = 0;
 
 	int pageForSwapNumber = -2;
 	unsigned long minTimes = -1;
 
-	//Определяем страницу для выгрузки
 	for (int i = 0; i < numberOfPages; i++)
 	{
 		if (minTimes > pageTable[i].timesUsed && pageTable[i].isUse == TRUE)
@@ -190,40 +161,45 @@ int preparePage(int pageNumber)
 		}
 	}
 
-	//Задание смещения страниц
 	pageTable[pageNumber].offset = pageTable[pageForSwapNumber].offset;
 	pageTable[pageForSwapNumber].offset = pageForSwapNumber * pageSize;
 
-	//Задание смещения и запись страрицы на данную позицию в файле подкачки
 	fseek(swap, pageForSwapNumber*pageSize, SEEK_SET);
 	fwrite(&memory[pageTable[pageNumber].offset], sizeof(char), pageSize, swap);
 
-	//Задание смещения и чтение страрицы из данной позиции в файле подкачки
 	fseek(swap, pageNumber*pageSize, SEEK_SET);
 	fread(&memory[pageTable[pageNumber].offset], sizeof(char), pageSize, swap);
 
-	//Флаги
 	pageTable[pageNumber].isUse = TRUE;
 	pageTable[pageForSwapNumber].isUse = FALSE;
 }
 
 unsigned int pageVA(VA ptr)
 {
-	//Возвращение номера страницы по ее виртуальному адресу
 	return ((unsigned int)ptr >> bitsForPageSize);
 }
 
 unsigned int offsetVA(VA ptr)
 {
-	//Возвращение смещения страницы по ее виртуальному адресу
 	return ((unsigned int)ptr & ((1 << bitsForPageSize) - 1));
 }
 
 void write(VA ptr, char value)
 {
-	//Подготовка страницы и запись value в физ. память
 	preparePage(pageVA(ptr));
 	memory[pageTable[pageVA(ptr)].offset + offsetVA(ptr)] = value;
+}
+
+int __write(int address, void * buffer, size_t size)
+{
+	char * cBuffer = (char*)buffer;
+
+	for (int i = 0; i < size; i++)
+	{
+		write(address + i, cBuffer[i]);
+	}
+
+	return 0;
 }
 
 int _write(VA pointer, void * buffer, size_t size)
@@ -233,7 +209,6 @@ int _write(VA pointer, void * buffer, size_t size)
 
 	if (((block*)pointer)->size < size) return -2;
 
-	//Каждый байт в блоке записываем по адресу
 	for (int i = 0; i < size; i++)
 	{
 		write(address + i, cBuffer[i]);
@@ -244,9 +219,20 @@ int _write(VA pointer, void * buffer, size_t size)
 
 char read(VA ptr)
 {
-	//Подготовка страницы и чтение из памяти
 	preparePage(pageVA(ptr));
 	return memory[pageTable[pageVA(ptr)].offset + offsetVA(ptr)];
+}
+
+int __read(int address, void * buffer, size_t size)
+{
+	char * cBuffer = (char*)buffer;
+
+	for (int i = 0; i < size; i++)
+	{
+		cBuffer[i] = read(address + i);
+	}
+
+	return 0;
 }
 
 int _read(VA pointer, void * buffer, size_t size)
@@ -254,7 +240,6 @@ int _read(VA pointer, void * buffer, size_t size)
 	char * cBuffer = (char*)buffer;
 	unsigned long address = ((block*)pointer)->address;
 
-	//Выход за пределы буфера
 	if (((block*)pointer)->size > size) return -2;
 
 	for (int i = 0; i < size; i++){

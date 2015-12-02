@@ -48,17 +48,21 @@ namespace UnitTests
 			char srcArray[10] = { 't' ,'e','s','t',' ','a','r','r','a','y' };
 			char resArray[10];
 			
-			
 			_write(adr, srcArray, 10);
-			_read(adr, resArray, 10);
+			_read(adr, resArray, 11);
 
 			int counter = 0;
-			for (int i = 0; i < 10; i++)
+			for (int i = 0; i < 8; i++)
 			{
 				if (srcArray[i] == resArray[i]) counter++;
 			}
 
-			Assert::AreEqual(10, counter, L"Success", LINE_INFO());
+			Assert::AreEqual(10, counter, L"Fail", LINE_INFO());
+		}
+
+		TEST_METHOD(PosWriteByAddress)
+		{
+
 		}
 	};
 	TEST_CLASS(NegativeTests)

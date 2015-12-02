@@ -11,7 +11,6 @@
 #define TRUE 1
 #define FALSE 0
 #define PHYSICAL_MEMORY_SIZE 1<<20
-#define VIRTUAL_MEMORY_SIZE 10000000
 #define PHYSICAL_PAGES_NUMBER (PHYSICAL_MEMORY_SIZE/pageSize)
 #define MAX_VIRTUAL_MEMORY_SIZE numberOfPages*pageSize
 
@@ -22,14 +21,6 @@ typedef struct block
 	char isUse;
 	unsigned int number;
 } block;
-
-//typedef struct block {
-//	struct block * next;
-//	struct block * prev;
-//	size_t size;
-//	unsigned int address;
-//	char isUse;
-//} block;
 
 typedef struct page {
 	unsigned long offset;
@@ -56,6 +47,9 @@ MMEMORY_API unsigned int getInterrupts();
 MMEMORY_API void setInterrupts(unsigned int number);
 
 FILE * swap = NULL;				//Файл подкачки
+
+MMEMORY_API int __write(int address, void * buffer, size_t size);
+MMEMORY_API int __read(int address, void * buffer, size_t size);
 
 /**
 	@func	_init
